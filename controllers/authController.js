@@ -37,7 +37,6 @@ exports.signup = catchAsync(async (req, res, next) => {
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
     role: req.body.role
   });
@@ -207,7 +206,6 @@ exports.resetPassword = async (req, res, next) => {
     return next(new AppError('Token is invalid or expired', 400));
   }
   user.password = req.body.password;
-  user.passwordConfirm = req.body.passwordConfirm;
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
   await user.save();
@@ -228,7 +226,6 @@ exports.updatePassword = async (req, res, next) => {
 
   // 3) If so, update password
   user.password = req.body.password;
-  user.passwordConfirm = req.body.passwordConfirm;
   await user.save();
 
   // 4) Log user in, send JWT
