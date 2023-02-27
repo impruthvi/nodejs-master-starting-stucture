@@ -1,44 +1,56 @@
 const crypto = require('crypto');
 const mongoose = require('mongoose');
+const validator = require('validator');
 const bcrypt = require('bcryptjs');
 
 // name,email,photo,passowrd
-const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String
-    },
-    email: {
-      type: String,
-      unique: true
-    },
-    photo: {
-      type: String,
-      default: 'default.jpg'
-    },
-    role: {
-      type: String,
-      enum: ['user', 'guide', 'lead-guide', 'admin'],
-      default: 'user'
-    },
-    password: {
-      type: String,
-      select: false
-    },
-    passwordChangedAt: Date,
-    passwordResetToken: String,
-    passwordResetExpires: Date,
-    active: {
-      type: Boolean,
-      default: true,
-      select: false
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Please tell us your name']
+  },
+  email: {
+    type: String,
+    required: [true, 'Please provide your email'],
+    unique: true,
+    lowercase: true,
+    validate: [validator.isEmail, 'Please provide a valid email']
+  },
+  photo: {
+    type: String,
+    default: 'default.jpg'
+  },
+  role: {
+    type: String,
+    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    default: 'user'
+  },
+  password: {
+    type: String,
+    required: [true, 'Please provide a passowrd'],
+    minlength: 8,
+    select: false
+  },
+  passwordConfirm: {
+    type: String,
+    required: [true, 'Please confirm your passowrd'],
+    validate: {
+      // ONLY WORK ON SAVE and CREATE
+      validator: function(el) {
+        return el === this.password;
+      },
+      message: 'Password are not the same'
     }
   },
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+  passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false
   }
-);
+});
 
 userSchema.pre('save', async function(next) {
   // Only run this function if password was actually modified
@@ -47,6 +59,8 @@ userSchema.pre('save', async function(next) {
   //   Hash the password with cost of 12
   this.password = await bcrypt.hash(this.password, 12);
 
+  //   Delete passwordConfirm field
+  this.passwordConfirm = undefined;
   next();
 });
 
