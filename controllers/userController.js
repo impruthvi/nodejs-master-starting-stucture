@@ -4,9 +4,9 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('../handler/factoryHandler');
 const { filterObj } = require('../utils/filterObject');
-const ImageUpload = require('../utils/imageUpload');
+const FileUpload = require('../utils/fileUpload');
 
-exports.uploadUserPhoto = new ImageUpload('photo').singleImageUpload();
+exports.uploadUserPhoto = new FileUpload('image').singleFileUpload('photo');
 exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
 
